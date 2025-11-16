@@ -66,23 +66,26 @@ public class TableController extends HttpServlet {
         CustomerDAO customerDAO = new CustomerDAO();
         HttpSession session = request.getSession();
         
-        // Tìm khách hàng theo SĐT hoặc tên
-        Customer customer = customerDAO.getCustomerByPhone(customerInfo);
+        // Tìm khách hàng theo TÊN hoặc SĐT
+        Customer customer = customerDAO.getCustomerByNameOrPhone(customerInfo);
         
         if (customer != null) {
             // Lưu customer vào session để dùng khi lưu bill
             session.setAttribute("currentCustomer", customer);
             
-            // Tìm các bàn đã đặt của khách hàng này
-            // Giả sử bàn đã đặt được lưu trong session hoặc database
-            // Tạm thời trả về bàn có status "Đã đặt"
-            List<Table> foundTables = tableDAO.getTablesByStatus("Đã đặt");
+            // Tìm các bàn đã đặt của khách hàng này từ database
+            List<Table> foundTables = tableDAO.getTablesByCustomerId(customer.getId());
+            
+            if (foundTables.isEmpty()) {
+                request.setAttribute("message", "Khách hàng " + customer.getUser().getName() + " chưa đặt bàn nào!");
+            }
+            
             request.setAttribute("foundTables", foundTables);
         } else {
-            // Nếu không tìm thấy, lưu phone vào session để tạo customer mới sau
+            // Nếu không tìm thấy, lưu info vào session để tạo customer mới sau
             session.setAttribute("customerPhone", customerInfo);
             request.setAttribute("foundTables", new java.util.ArrayList<Table>());
-            request.setAttribute("message", "Khách hàng mới, vui lòng chọn bàn và đặt món!");
+            request.setAttribute("message", "Không tìm thấy khách hàng. Vui lòng chọn bàn và đặt món!");
         }
         
         request.getRequestDispatcher("SearchTableUI.jsp").forward(request, response);

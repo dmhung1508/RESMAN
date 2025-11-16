@@ -154,6 +154,18 @@
             </div>
             
             <div class="form-group">
+                <label for="txtType">Loại món <span class="required">*</span></label>
+                <select id="txtType" name="txtType" required>
+                    <option value="Món chính" ${dish.type == 'Món chính' ? 'selected' : ''}>Món chính</option>
+                    <option value="Khai vị" ${dish.type == 'Khai vị' ? 'selected' : ''}>Khai vị</option>
+                    <option value="Món canh" ${dish.type == 'Món canh' ? 'selected' : ''}>Món canh</option>
+                    <option value="Món lẩu" ${dish.type == 'Món lẩu' ? 'selected' : ''}>Món lẩu</option>
+                    <option value="Tráng miệng" ${dish.type == 'Tráng miệng' ? 'selected' : ''}>Tráng miệng</option>
+                    <option value="Đồ uống" ${dish.type == 'Đồ uống' ? 'selected' : ''}>Đồ uống</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
                 <label for="txtDescription">Mô tả</label>
                 <textarea id="txtDescription" name="txtDescription">${dish.description}</textarea>
             </div>

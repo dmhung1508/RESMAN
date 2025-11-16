@@ -40,6 +40,7 @@ public class LoginController extends HttpServlet {
             session.setAttribute("username", staff.getUser().getUsername());
             session.setAttribute("fullname", staff.getUser().getName());
             session.setAttribute("position", staff.getPosition());
+            session.setAttribute("role", staff.getUser().getRole()); // Thêm role vào session
             
             // Chuyển hướng đến trang quản lý
             response.sendRedirect("MainStaffUI.jsp");

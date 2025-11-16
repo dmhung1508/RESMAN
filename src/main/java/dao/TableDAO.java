@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TableDAO extends DAO {
 
@@ -129,5 +131,49 @@ public class TableDAO extends DAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Lấy danh sách bàn đã đặt bởi khách hàng
+     * @param customerId ID khách hàng
+     * @return Danh sách các bàn
+     */
+    public List<Table> getTablesByCustomerId(int customerId) {
+        List<Table> tables = new ArrayList<>();
+        Set<Integer> tableIds = new HashSet<>();
+        
+        String sql = "SELECT DISTINCT t.ID, t.description, t.status FROM tblTable t " +
+                    "JOIN tblOrderedTable ot ON t.ID = ot.TableID " +
+                    "JOIN tblBill b ON ot.BillID = b.ID " +
+                    "WHERE b.CustomerID = ? " +
+                    "ORDER BY t.ID";
+        
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, customerId);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                int tableId = rs.getInt("ID");
+                // Chỉ thêm nếu chưa có trong set (tránh trùng)
+                if (!tableIds.contains(tableId)) {
+                    tableIds.add(tableId);
+                    
+                    Table table = new Table();
+                    table.setId(tableId);
+                    table.setDescription(rs.getString("description"));
+                    table.setStatus(rs.getString("status"));
+                    tables.add(table);
+                }
+            }
+            
+            rs.close();
+            ps.close();
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return tables;
     }
 }

@@ -106,6 +106,50 @@ public class CustomerDAO extends DAO {
     }
 
     /**
+     * Lấy thông tin customer theo tên hoặc SĐT
+     * @param info Tên hoặc SĐT khách hàng
+     * @return Customer object hoặc null
+     */
+    public Customer getCustomerByNameOrPhone(String info) {
+        Customer customer = null;
+        String sql = "SELECT c.ID, u.* FROM tblCustomer c " +
+                    "JOIN tblUser u ON c.ID = u.ID " +
+                    "WHERE (u.name LIKE ? OR u.phone = ?) AND u.role = 'customer'";
+        
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, "%" + info + "%");
+            ps.setString(2, info);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                customer = new Customer();
+                customer.setId(rs.getInt("ID"));
+                
+                Users user = new Users();
+                user.setId(rs.getInt("ID"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setName(rs.getString("name"));
+                user.setDate(rs.getDate("date"));
+                user.setAddress(rs.getString("address"));
+                user.setPhone(rs.getString("phone"));
+                user.setRole(rs.getString("role"));
+                
+                customer.setUser(user);
+            }
+            
+            rs.close();
+            ps.close();
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return customer;
+    }
+
+    /**
      * Kiểm tra phone đã tồn tại chưa
      * @param phone Số điện thoại cần kiểm tra
      * @return true nếu đã tồn tại, false nếu chưa
