@@ -47,6 +47,41 @@ public class BillController extends HttpServlet {
         // Quay lại trang chọn món
         response.sendRedirect("SelectDish.jsp");
     }
+    
+    private void doUpdateCart(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession();
+        int dishId = Integer.parseInt(request.getParameter("dishId"));
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
+        
+        @SuppressWarnings("unchecked")
+        Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
+        
+        if (cart != null && quantity > 0) {
+            cart.put(dishId, quantity);
+            session.setAttribute("cart", cart);
+        }
+        
+        response.sendRedirect("SelectDish.jsp");
+    }
+    
+    private void doRemoveFromCart(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession();
+        int dishId = Integer.parseInt(request.getParameter("dishId"));
+        
+        @SuppressWarnings("unchecked")
+        Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
+        
+        if (cart != null) {
+            cart.remove(dishId);
+            session.setAttribute("cart", cart);
+        }
+        
+        response.sendRedirect("SelectDish.jsp");
+    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -73,6 +108,12 @@ public class BillController extends HttpServlet {
         switch (action) {
             case "addToCart":
                 doAddToCart(request, response);
+                break;
+            case "updateCart":
+                doUpdateCart(request, response);
+                break;
+            case "removeFromCart":
+                doRemoveFromCart(request, response);
                 break;
             case "confirm":
                 doConfirmOrder(request, response);
@@ -135,10 +176,10 @@ public class BillController extends HttpServlet {
             return;
         }
         
-        if (staff == null) {
-            request.setAttribute("errorMessage", "Vui lòng đăng nhập!");
-            response.sendRedirect("Login.jsp");
-            return;
+        // Staff có thể null nếu khách tự đặt online
+        int staffId = 0;
+        if (staff != null) {
+            staffId = staff.getId();
         }
         
         // Tìm hoặc tạo khách hàng
@@ -171,9 +212,36 @@ public class BillController extends HttpServlet {
                 customerId = customerDAO.register(newUser);
             }
         } else {
-            request.setAttribute("errorMessage", "Không có thông tin khách hàng!");
-            request.getRequestDispatcher("ConfirmUI.jsp").forward(request, response);
-            return;
+            // Lấy thông tin từ form nếu không có trong session
+            String formPhone = request.getParameter("customerPhone");
+            String formName = request.getParameter("customerName");
+            
+            if (formPhone != null && !formPhone.isEmpty()) {
+                // Tìm customer theo phone từ form
+                model.Customer customer = customerDAO.getCustomerByPhone(formPhone);
+                
+                if (customer != null) {
+                    customerId = customer.getId();
+                } else {
+                    // Tạo customer mới
+                    if (formName == null || formName.isEmpty()) {
+                        formName = "Khách hàng";
+                    }
+                    
+                    model.Users newUser = new model.Users();
+                    newUser.setUsername(formPhone);
+                    newUser.setPassword("123456");
+                    newUser.setName(formName);
+                    newUser.setPhone(formPhone);
+                    newUser.setRole("customer");
+                    
+                    customerId = customerDAO.register(newUser);
+                }
+            } else {
+                request.setAttribute("errorMessage", "Vui lòng nhập thông tin khách hàng!");
+                request.getRequestDispatcher("ConfirmUI.jsp").forward(request, response);
+                return;
+            }
         }
         
         if (customerId == 0) {
@@ -200,7 +268,7 @@ public class BillController extends HttpServlet {
         
         // Lưu hóa đơn
         BillDAO billDAO = new BillDAO();
-        boolean success = billDAO.saveBill(order, customerId, selectedTable.getId(), staff.getId());
+        boolean success = billDAO.saveBill(order, customerId, selectedTable.getId(), staffId);
         
         if (success) {
             // Lưu chi tiết đơn hàng
@@ -216,9 +284,6 @@ public class BillController extends HttpServlet {
             dao.TableDAO tableDAO = new dao.TableDAO();
             tableDAO.updateTableStatus(selectedTable.getId(), "Đã đặt");
             
-            // Lưu thông tin đơn hàng vào session
-            session.setAttribute("order", order);
-            
             // Xóa giỏ hàng và session data
             session.removeAttribute("cart");
             session.removeAttribute("selectedTable");
@@ -226,7 +291,9 @@ public class BillController extends HttpServlet {
             session.removeAttribute("customerPhone");
             
             // Chuyển đến trang thông báo thành công
-            response.sendRedirect("OrderSavedUI.jsp");
+            request.setAttribute("successMessage", "Đơn hàng đã được lưu thành công!");
+            request.setAttribute("savedOrder", order);
+            request.getRequestDispatcher("ConfirmUI.jsp").forward(request, response);
         } else {
             request.setAttribute("errorMessage", "Lưu đơn hàng thất bại!");
             request.getRequestDispatcher("ConfirmUI.jsp").forward(request, response);

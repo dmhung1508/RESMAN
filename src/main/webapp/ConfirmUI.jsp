@@ -1,11 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="dao.DishDAO" %>
 <%@ page import="model.Dish" %>
+<%@ page import="model.Customer" %>
+<%@ page import="model.Order" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.math.BigDecimal" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
+    Order savedOrder = (Order) request.getAttribute("savedOrder");
+    String successMessage = (String) request.getAttribute("successMessage");
     DishDAO dishDAO = new DishDAO();
     BigDecimal grandTotal = BigDecimal.ZERO;
 %>
@@ -182,6 +186,58 @@
     </style>
 </head>
 <body>
+    <% if (successMessage != null && savedOrder != null) { %>
+    <!-- Success View -->
+    <div class="container" style="max-width: 700px;">
+        <div style="width: 100px; height: 100px; border: 3px solid #2c2c2c; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 40px; font-size: 48px; animation: scaleIn 0.6s ease-out;">✓</div>
+        
+        <style>
+            @keyframes scaleIn {
+                0% { transform: scale(0); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+        </style>
+        
+        <div class="header" style="font-size: 32px; letter-spacing: 2px;">ĐẶT MÓN THÀNH CÔNG</div>
+        
+        <div class="content">
+            <div style="color: #666; font-size: 16px; line-height: 1.8; margin-bottom: 30px; text-align: center;">
+                Cảm ơn bạn đã đặt món. Đơn hàng của bạn đã được ghi nhận và đang được xử lý.
+            </div>
+            
+            <div style="background: #fafafa; padding: 30px; margin-bottom: 30px; border: 1px solid #e8e8e8;">
+                <h3 style="margin-bottom: 20px; color: #2c2c2c; font-size: 16px; font-weight: 500; letter-spacing: 1px; text-align: center;">THÔNG TIN ĐƠN HÀNG</h3>
+                
+                <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e8e8e8;">
+                    <span style="color: #666; font-weight: 400; font-size: 14px;">Mã đơn hàng</span>
+                    <span style="color: #2c2c2c; font-weight: 500; font-size: 14px;">#<%= savedOrder.getOrderID() %></span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e8e8e8;">
+                    <span style="color: #666; font-weight: 400; font-size: 14px;">Ngày đặt</span>
+                    <span style="color: #2c2c2c; font-weight: 500; font-size: 14px;">Hôm nay</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 20px 0 15px; border-top: 2px solid #2c2c2c; margin-top: 10px;">
+                    <span style="color: #666; font-weight: 400; font-size: 14px;">Tổng tiền</span>
+                    <span style="color: #2c2c2c; font-weight: 600; font-size: 18px;"><%= String.format("%,d", savedOrder.getTotalAmount().intValue()) %> VNĐ</span>
+                </div>
+            </div>
+            
+            <div style="background: #fafafa; color: #2c2c2c; padding: 20px; margin-bottom: 30px; font-size: 14px; line-height: 1.8; border-left: 3px solid #2c2c2c;">
+                <strong>Lưu ý:</strong> Vui lòng đến nhà hàng đúng giờ đã đặt. 
+                Nhân viên sẽ phục vụ các món ăn cho bạn ngay khi bạn đến.
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="index.jsp" class="btn btn-yes">Về Trang Chủ</a>
+            </div>
+        </div>
+    </div>
+    
+    <% } else { %>
+    <!-- Confirmation View -->
     <div class="container">
         <div class="header">Xác Nhận Đơn Hàng</div>
         
@@ -237,6 +293,21 @@
             <div class="choice-buttons">
                 <form action="BillController" method="post" style="margin: 0;">
                     <input type="hidden" name="action" value="save">
+                    <%
+                    // Kiểm tra xem có thông tin customer chưa
+                    model.Customer currentCustomer = (model.Customer) session.getAttribute("currentCustomer");
+                    String customerPhone = (String) session.getAttribute("customerPhone");
+                    
+                    if (currentCustomer == null && (customerPhone == null || customerPhone.isEmpty())) {
+                    %>
+                    <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 500;">Thông tin khách hàng:</label>
+                        <input type="text" name="customerName" placeholder="Tên khách hàng" 
+                               style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+                        <input type="text" name="customerPhone" placeholder="Số điện thoại" 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+                    </div>
+                    <% } %>
                     <button type="submit" class="btn btn-yes" <%= (cart == null || cart.isEmpty()) ? "disabled" : "" %>>Xác Nhận</button>
                 </form>
                 <button type="button" class="btn" 
@@ -244,5 +315,6 @@
             </div>
         </div>
     </div>
+    <% } %>
 </body>
 </html>

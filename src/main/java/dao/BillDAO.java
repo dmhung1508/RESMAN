@@ -24,7 +24,7 @@ public class BillDAO extends DAO {
      * @param order Đối tượng Order cần lưu
      * @param customerId ID khách hàng
      * @param tableId ID bàn
-     * @param staffId ID nhân viên
+     * @param staffId ID nhân viên (0 nếu khách tự đặt)
      * @return true nếu lưu thành công, false nếu thất bại
      */
     public boolean saveBill(Order order, int customerId, int tableId, int staffId) {
@@ -35,7 +35,13 @@ public class BillDAO extends DAO {
             ps.setDate(1, new Date(System.currentTimeMillis()));
             ps.setFloat(2, order.getTotalAmount().floatValue());
             ps.setInt(3, customerId);
-            ps.setInt(4, staffId);
+            
+            // Nếu staffId = 0 thì set NULL
+            if (staffId == 0) {
+                ps.setNull(4, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(4, staffId);
+            }
             
             int rowsAffected = ps.executeUpdate();
             
@@ -146,7 +152,7 @@ public class BillDAO extends DAO {
             
             while (rs.next()) {
                 Bill bill = new Bill();
-                bill.setBillID(rs.getInt("billID"));
+                bill.setBillID(rs.getInt("ID")); // Database column is ID not billID
                 bill.setTotalAmount(BigDecimal.valueOf(rs.getFloat("totalprice")));
                 bill.setStatus(rs.getString("status"));
                 bill.setCustomerName(rs.getString("customer_name"));

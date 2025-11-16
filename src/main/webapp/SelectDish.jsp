@@ -228,6 +228,69 @@
             letter-spacing: 0.5px;
         }
     </style>
+    
+    <script>
+        function updateQuantity(dishId, delta) {
+            const input = document.getElementById('qty-' + dishId);
+            let newQty = parseInt(input.value);
+            
+            if (delta !== 0) {
+                newQty = Math.max(1, newQty + delta);
+                input.value = newQty;
+            } else {
+                newQty = Math.max(1, parseInt(input.value));
+            }
+            
+            // Submit form to update cart
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'BillController';
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'updateCart';
+            form.appendChild(actionInput);
+            
+            const dishIdInput = document.createElement('input');
+            dishIdInput.type = 'hidden';
+            dishIdInput.name = 'dishId';
+            dishIdInput.value = dishId;
+            form.appendChild(dishIdInput);
+            
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'hidden';
+            qtyInput.name = 'quantity';
+            qtyInput.value = newQty;
+            form.appendChild(qtyInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        function removeDish(dishId) {
+            if (confirm('Bạn có chắc muốn xóa món này?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'BillController';
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'removeFromCart';
+                form.appendChild(actionInput);
+                
+                const dishIdInput = document.createElement('input');
+                dishIdInput.type = 'hidden';
+                dishIdInput.name = 'dishId';
+                dishIdInput.value = dishId;
+                form.appendChild(dishIdInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="page-header">
@@ -315,8 +378,9 @@
                     <thead>
                         <tr>
                             <th>Tên Món</th>
-                            <th style="width: 120px;">Số Lượng</th>
+                            <th style="width: 200px; text-align: center;">Số Lượng</th>
                             <th style="width: 150px;">Thành Tiền</th>
+                            <th style="width: 100px; text-align: center;">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -334,22 +398,36 @@
                         %>
                         <tr>
                             <td><%= dish.getName() %></td>
-                            <td style="text-align: center;"><%= entry.getValue() %></td>
+                            <td style="text-align: center;">
+                                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <button onclick="updateQuantity(<%= dish.getId() %>, -1)" 
+                                            style="width: 28px; height: 28px; border: 1px solid #2c2c2c; background: white; cursor: pointer; font-size: 14px;">−</button>
+                                    <input type="number" id="qty-<%= dish.getId() %>" value="<%= entry.getValue() %>" min="1" 
+                                           style="width: 60px; text-align: center; border: 1px solid #ddd; padding: 5px;"
+                                           onchange="updateQuantity(<%= dish.getId() %>, 0)">
+                                    <button onclick="updateQuantity(<%= dish.getId() %>, 1)" 
+                                            style="width: 28px; height: 28px; border: 1px solid #2c2c2c; background: white; cursor: pointer; font-size: 14px;">+</button>
+                                </div>
+                            </td>
                             <td><%= subtotal %> VND</td>
+                            <td style="text-align: center;">
+                                <button onclick="removeDish(<%= dish.getId() %>)" 
+                                        style="padding: 6px 12px; border: 1px solid #d32f2f; background: white; color: #d32f2f; cursor: pointer; font-size: 11px;">Xóa</button>
+                            </td>
                         </tr>
                         <%
                                     }
                                 }
                         %>
                         <tr class="total-row">
-                            <td colspan="2" style="text-align: right; padding-right: 20px;">TỔNG CỘNG</td>
+                            <td colspan="3" style="text-align: right; padding-right: 20px;">TỔNG CỘNG</td>
                             <td><%= totalAmount %> VND</td>
                         </tr>
                         <%
                             } else {
                         %>
                         <tr>
-                            <td colspan="3" style="text-align: center; color: #999;">Giỏ hàng trống</td>
+                            <td colspan="4" style="text-align: center; color: #999;">Giỏ hàng trống</td>
                         </tr>
                         <%
                             }

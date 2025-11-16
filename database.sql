@@ -156,7 +156,7 @@ CREATE TABLE tblBill (
     totalprice float NOT NULL,
     status varchar(50),
     CustomerID int(10),
-    tblStaffID int(10) NOT NULL,
+    tblStaffID int(10), -- Cho phép NULL nếu khách tự đặt
     PRIMARY KEY (ID),
     FOREIGN KEY (CustomerID) REFERENCES tblCustomer (ID),
     FOREIGN KEY (tblStaffID) REFERENCES tblStaff (ID)
