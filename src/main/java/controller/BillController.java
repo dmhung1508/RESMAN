@@ -3,8 +3,8 @@ package controller;
 import dao.BillDAO;
 import dao.DishDAO;
 import dao.CustomerDAO;
-import model.Order;
-import model.OrderItem;
+import model.Bill;
+import model.Bill.OrderItem;
 import model.Dish;
 import model.Staff;
 import model.Customer;
@@ -124,11 +124,8 @@ public class BillController extends HttpServlet {
             case "view":
                 doViewBill(request, response);
                 break;
-            case "history":
-                doViewHistory(request, response);
-                break;
             default:
-                doViewHistory(request, response);
+                response.sendRedirect("MainManagementUI.jsp");
                 break;
         }
     }
@@ -263,12 +260,12 @@ public class BillController extends HttpServlet {
         }
         
         // Tạo đơn hàng
-        Order order = new Order();
-        order.setTotalAmount(totalAmount);
+        Bill bill = new Bill();
+        bill.setTotalAmount(totalAmount);
         
         // Lưu hóa đơn
         BillDAO billDAO = new BillDAO();
-        boolean success = billDAO.saveBill(order, customerId, selectedTable.getId(), staffId);
+        boolean success = billDAO.saveBill(bill, customerId, selectedTable.getId(), staffId);
         
         if (success) {
             // Lưu chi tiết đơn hàng
@@ -276,7 +273,7 @@ public class BillController extends HttpServlet {
                 Dish dish = dishDAO.getDishInfo(entry.getKey());
                 if (dish != null) {
                     BigDecimal lineTotal = dish.getPrice().multiply(BigDecimal.valueOf(entry.getValue()));
-                    billDAO.saveOrderItem(order.getOrderID(), entry.getKey(), entry.getValue(), lineTotal);
+                    billDAO.saveOrderItem(bill.getBillID(), entry.getKey(), entry.getValue(), lineTotal);
                 }
             }
             
@@ -292,7 +289,7 @@ public class BillController extends HttpServlet {
             
             // Chuyển đến trang thông báo thành công
             request.setAttribute("successMessage", "Đơn hàng đã được lưu thành công!");
-            request.setAttribute("savedOrder", order);
+            request.setAttribute("savedOrder", bill);
             request.getRequestDispatcher("ConfirmUI.jsp").forward(request, response);
         } else {
             request.setAttribute("errorMessage", "Lưu đơn hàng thất bại!");
@@ -306,30 +303,17 @@ public class BillController extends HttpServlet {
         int billId = Integer.parseInt(request.getParameter("billId"));
         BillDAO billDAO = new BillDAO();
         
-        Order order = billDAO.getBillById(billId);
+        Bill bill = billDAO.getBillById(billId);
         
-        if (order != null) {
+        if (bill != null) {
             List<OrderItem> orderItems = billDAO.getOrderItemsByBillId(billId);
-            order.setOrderItems(orderItems);
+            bill.setOrderItems(orderItems);
             
-            request.setAttribute("order", order);
+            request.setAttribute("order", bill);
             request.getRequestDispatcher("ViewBillUI.jsp").forward(request, response);
         } else {
-            // Lấy danh sách bill để hiển thị
-            List<Bill> bills = billDAO.getAllBillsWithInfo();
-            request.setAttribute("bills", bills);
             request.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
-            request.getRequestDispatcher("StaffOrderHistoryUI.jsp").forward(request, response);
+            response.sendRedirect("MainManagementUI.jsp");
         }
-    }
-
-    private void doViewHistory(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        BillDAO billDAO = new BillDAO();
-        List<Bill> bills = billDAO.getAllBillsWithInfo();
-        
-        request.setAttribute("bills", bills);
-        request.getRequestDispatcher("StaffOrderHistoryUI.jsp").forward(request, response);
     }
 }

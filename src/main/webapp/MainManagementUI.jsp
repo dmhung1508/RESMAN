@@ -84,7 +84,6 @@
         
         <div class="content">
             <a href="DishController" class="menu-button">Quản Lý Món Ăn</a>
-            <a href="BillController?action=history" class="menu-button">Xem Lịch Sử Đơn Hàng</a>
             <a href="LogoutController" class="menu-button">Đăng Xuất</a>
         </div>
     </div>

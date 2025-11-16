@@ -2,13 +2,13 @@
 <%@ page import="dao.DishDAO" %>
 <%@ page import="model.Dish" %>
 <%@ page import="model.Customer" %>
-<%@ page import="model.Order" %>
+<%@ page import="model.Bill" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.math.BigDecimal" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
-    Order savedOrder = (Order) request.getAttribute("savedOrder");
+    Bill savedOrder = (Bill) request.getAttribute("savedOrder");
     String successMessage = (String) request.getAttribute("successMessage");
     DishDAO dishDAO = new DishDAO();
     BigDecimal grandTotal = BigDecimal.ZERO;
@@ -211,7 +211,7 @@
                 
                 <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e8e8e8;">
                     <span style="color: #666; font-weight: 400; font-size: 14px;">Mã đơn hàng</span>
-                    <span style="color: #2c2c2c; font-weight: 500; font-size: 14px;">#<%= savedOrder.getOrderID() %></span>
+                    <span style="color: #2c2c2c; font-weight: 500; font-size: 14px;">#<%= savedOrder.getBillID() %></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e8e8e8;">

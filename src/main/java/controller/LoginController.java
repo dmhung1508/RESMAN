@@ -43,7 +43,7 @@ public class LoginController extends HttpServlet {
             session.setAttribute("role", staff.getUser().getRole()); // Thêm role vào session
             
             // Chuyển hướng đến trang quản lý
-            response.sendRedirect("MainStaffUI.jsp");
+            response.sendRedirect("MainManagementUI.jsp");
         } else {
             // Đăng nhập thất bại
             request.setAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không đúng!");

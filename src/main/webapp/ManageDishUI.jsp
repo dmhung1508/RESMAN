@@ -236,7 +236,7 @@
             
             <div class="button-group">
                 <button type="button" class="btn" 
-                        onclick="window.location.href='MainStaffUI.jsp'">Quay Lại</button>
+                        onclick="window.location.href='MainManagementUI.jsp'">Quay Lại</button>
             </div>
         </div>
     </div>

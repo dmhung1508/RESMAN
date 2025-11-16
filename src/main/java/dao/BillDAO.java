@@ -1,7 +1,7 @@
 package dao;
 
-import model.Order;
-import model.OrderItem;
+import model.Bill;
+import model.Bill.OrderItem;
 import model.Dish;
 import model.Bill;
 import java.math.BigDecimal;
@@ -21,19 +21,19 @@ public class BillDAO extends DAO {
 
     /**
      * Lưu hóa đơn vào database
-     * @param order Đối tượng Order cần lưu
+     * @param bill Đối tượng Bill cần lưu
      * @param customerId ID khách hàng
      * @param tableId ID bàn
      * @param staffId ID nhân viên (0 nếu khách tự đặt)
      * @return true nếu lưu thành công, false nếu thất bại
      */
-    public boolean saveBill(Order order, int customerId, int tableId, int staffId) {
+    public boolean saveBill(Bill bill, int customerId, int tableId, int staffId) {
         String sqlBill = "INSERT INTO tblBill (`date`, totalprice, status, CustomerID, tblStaffID) VALUES (?, ?, 'Chưa thanh toán', ?, ?)";
         
         try {
             PreparedStatement ps = con.prepareStatement(sqlBill, Statement.RETURN_GENERATED_KEYS);
             ps.setDate(1, new Date(System.currentTimeMillis()));
-            ps.setFloat(2, order.getTotalAmount().floatValue());
+            ps.setFloat(2, bill.getTotalAmount().floatValue());
             ps.setInt(3, customerId);
             
             // Nếu staffId = 0 thì set NULL
@@ -49,7 +49,7 @@ public class BillDAO extends DAO {
                 // Lấy ID vừa được tạo
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
-                    order.setOrderID(rs.getInt(1));
+                    bill.setBillID(rs.getInt(1));
                 }
                 rs.close();
                 
@@ -58,7 +58,7 @@ public class BillDAO extends DAO {
                 PreparedStatement psTable = con.prepareStatement(sqlOrderedTable);
                 psTable.setDate(1, new Date(System.currentTimeMillis()));
                 psTable.setInt(2, tableId);
-                psTable.setInt(3, order.getOrderID());
+                psTable.setInt(3, bill.getBillID());
                 psTable.executeUpdate();
                 psTable.close();
             }
@@ -104,10 +104,10 @@ public class BillDAO extends DAO {
     /**
      * Lấy thông tin hóa đơn theo ID
      * @param billID ID của hóa đơn
-     * @return Đối tượng Order
+     * @return Đối tượng Bill
      */
-    public Order getBillById(int billID) {
-        Order order = null;
+    public Bill getBillById(int billID) {
+        Bill bill = null;
         String sql = "SELECT * FROM tblBill WHERE ID = ?";
         
         try {
@@ -116,10 +116,10 @@ public class BillDAO extends DAO {
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                order = new Order();
-                order.setOrderID(rs.getInt("ID"));
-                order.setTotalAmount(BigDecimal.valueOf(rs.getFloat("totalprice")));
-                // Set orderDate from date field
+                bill = new Bill();
+                bill.setBillID(rs.getInt("ID"));
+                bill.setTotalAmount(BigDecimal.valueOf(rs.getFloat("totalprice")));
+                // Set billDate from date field
             }
             
             rs.close();
@@ -129,7 +129,7 @@ public class BillDAO extends DAO {
             e.printStackTrace();
         }
         
-        return order;
+        return bill;
     }
 
     /**

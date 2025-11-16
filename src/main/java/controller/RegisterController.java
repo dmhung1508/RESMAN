@@ -69,6 +69,9 @@ public class RegisterController extends HttpServlet {
         user.setAddress(address);
         user.setRole("staff");
         
+        // Set ngày hiện tại
+        user.setDate(new java.sql.Date(System.currentTimeMillis()));
+        
         boolean success = staffDAO.register(user, role != null ? role : "Nhân viên");
         
         if (success) {
