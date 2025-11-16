@@ -166,8 +166,20 @@
         <div class="header">Tìm Bàn Đã Đặt</div>
         
         <div class="content">
+            <c:if test="${not empty successMessage}">
+                <div style="background: #f0fff4; color: #22543d; padding: 15px; margin-bottom: 25px; border-left: 3px solid #22543d; font-size: 14px;">
+                    ${successMessage}
+                </div>
+            </c:if>
+            
             <c:if test="${not empty errorMessage}">
                 <div class="error-message">${errorMessage}</div>
+            </c:if>
+            
+            <c:if test="${not empty message}">
+                <div style="background: #e6f7ff; color: #0066cc; padding: 15px; margin-bottom: 25px; border-left: 3px solid #0066cc; font-size: 14px;">
+                    ${message}
+                </div>
             </c:if>
             
             <form action="TableController" method="post">

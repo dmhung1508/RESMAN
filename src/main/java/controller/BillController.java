@@ -315,8 +315,11 @@ public class BillController extends HttpServlet {
             request.setAttribute("order", order);
             request.getRequestDispatcher("ViewBillUI.jsp").forward(request, response);
         } else {
+            // Lấy danh sách bill để hiển thị
+            List<Bill> bills = billDAO.getAllBillsWithInfo();
+            request.setAttribute("bills", bills);
             request.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
-            request.getRequestDispatcher("NotificationUI.jsp").forward(request, response);
+            request.getRequestDispatcher("StaffOrderHistoryUI.jsp").forward(request, response);
         }
     }
 

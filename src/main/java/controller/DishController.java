@@ -118,13 +118,17 @@ public class DishController extends HttpServlet {
         Dish dish = new Dish(dishID, name, price, type, status, description);
         boolean success = dishDAO.updateDish(dish);
         
+        // Lấy danh sách món ăn để hiển thị
+        List<Dish> dishList = dishDAO.getAllDishes();
+        request.setAttribute("dishList", dishList);
+        
         if (success) {
-            request.setAttribute("message", "Cập nhật món ăn thành công!");
+            request.setAttribute("successMessage", "Cập nhật món ăn thành công!");
         } else {
-            request.setAttribute("message", "Cập nhật món ăn thất bại!");
+            request.setAttribute("errorMessage", "Cập nhật món ăn thất bại!");
         }
         
-        request.getRequestDispatcher("NotificationUI.jsp").forward(request, response);
+        request.getRequestDispatcher("ManageDishUI.jsp").forward(request, response);
     }
 
     private void doList(HttpServletRequest request, HttpServletResponse response, DishDAO dishDAO)

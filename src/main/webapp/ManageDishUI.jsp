@@ -176,10 +176,22 @@
                 <input type="hidden" name="action" value="search">
                 <div class="search-row">
                     <input type="text" class="search-input" name="dishName" 
-                           value="${searchName}" placeholder="Nhập tên món cần tìm">
+                           value="${searchName}" placeholder="Nhập tên món hoặc loại món cần tìm">
                     <button type="submit" class="btn btn-primary" style="padding: 12px 40px;">Tìm Kiếm</button>
                 </div>
             </form>
+            
+            <c:if test="${not empty successMessage}">
+                <div style="background: #f0fff4; color: #22543d; padding: 15px; margin-bottom: 25px; border-left: 3px solid #22543d; font-size: 14px;">
+                    ${successMessage}
+                </div>
+            </c:if>
+            
+            <c:if test="${not empty errorMessage}">
+                <div style="background: #fff5f5; color: #c53030; padding: 15px; margin-bottom: 25px; border-left: 3px solid #c53030; font-size: 14px;">
+                    ${errorMessage}
+                </div>
+            </c:if>
             
             <table class="table-dishes">
                 <thead>

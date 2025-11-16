@@ -15,17 +15,19 @@ public class DishDAO extends DAO {
     }
 
     /**
-     * Lấy danh sách món ăn theo tên
-     * @param name Tên món ăn cần tìm
+     * Lấy danh sách món ăn theo tên HOẶC loại
+     * @param name Tên hoặc loại món ăn cần tìm
      * @return Danh sách món ăn
      */
     public List<Dish> getDishListByName(String name) {
         List<Dish> dishList = new ArrayList<>();
-        String sql = "SELECT * FROM tblDish WHERE name LIKE ?";
+        String sql = "SELECT * FROM tblDish WHERE name LIKE ? OR type LIKE ?";
         
         try {
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, "%" + name + "%");
+            String searchPattern = "%" + name + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
             ResultSet rs = ps.executeQuery();
             
             while (rs.next()) {

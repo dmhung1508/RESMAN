@@ -133,13 +133,17 @@ public class TableController extends HttpServlet {
         
         boolean success = tableDAO.updateTableStatus(tableId, status);
         
+        // Lấy danh sách bàn để hiển thị
+        List<Table> tableList = tableDAO.getAllTables();
+        request.setAttribute("tableList", tableList);
+        
         if (success) {
-            request.setAttribute("message", "Cập nhật trạng thái bàn thành công!");
+            request.setAttribute("successMessage", "Cập nhật trạng thái bàn thành công!");
         } else {
-            request.setAttribute("message", "Cập nhật trạng thái bàn thất bại!");
+            request.setAttribute("errorMessage", "Cập nhật trạng thái bàn thất bại!");
         }
         
-        request.getRequestDispatcher("NotificationUI.jsp").forward(request, response);
+        request.getRequestDispatcher("SearchTableUI.jsp").forward(request, response);
     }
 
     private void doList(HttpServletRequest request, HttpServletResponse response, TableDAO tableDAO)
