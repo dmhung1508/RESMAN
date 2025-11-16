@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
 
 public class TableDAO extends DAO {
 
@@ -140,31 +138,27 @@ public class TableDAO extends DAO {
      */
     public List<Table> getTablesByCustomerId(int customerId) {
         List<Table> tables = new ArrayList<>();
-        Set<Integer> tableIds = new HashSet<>();
         
-        String sql = "SELECT DISTINCT t.ID, t.description, t.status FROM tblTable t " +
+        // Chỉ lấy bàn từ bill mới nhất (chưa thanh toán) của khách hàng
+        String sql = "SELECT t.ID, t.description, t.status " +
+                    "FROM tblTable t " +
                     "JOIN tblOrderedTable ot ON t.ID = ot.TableID " +
                     "JOIN tblBill b ON ot.BillID = b.ID " +
-                    "WHERE b.CustomerID = ? " +
-                    "ORDER BY t.ID";
+                    "WHERE b.CustomerID = ? AND b.status = 'Chưa thanh toán' " +
+                    "ORDER BY b.date DESC, b.ID DESC " +
+                    "LIMIT 1";
         
         try {
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setInt(1, customerId);
             ResultSet rs = ps.executeQuery();
             
-            while (rs.next()) {
-                int tableId = rs.getInt("ID");
-                // Chỉ thêm nếu chưa có trong set (tránh trùng)
-                if (!tableIds.contains(tableId)) {
-                    tableIds.add(tableId);
-                    
-                    Table table = new Table();
-                    table.setId(tableId);
-                    table.setDescription(rs.getString("description"));
-                    table.setStatus(rs.getString("status"));
-                    tables.add(table);
-                }
+            if (rs.next()) {
+                Table table = new Table();
+                table.setId(rs.getInt("ID"));
+                table.setDescription(rs.getString("description"));
+                table.setStatus(rs.getString("status"));
+                tables.add(table);
             }
             
             rs.close();
